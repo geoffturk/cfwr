@@ -1,0 +1,22 @@
+name = "remix-cloudflare-workers"
+type = "javascript"
+
+zone_id = ""
+account_id = "701c7408c464735a962d9149e57d851f"
+route = ""
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "MYDATA"
+id = "3be94b2f9c8948d4a7e1fc68c04ea9f9"
+
+[site]
+bucket = "./public"
+entry-point = "."
+
+[build]
+command = "npm run build:worker"
+watch_dir = "build/index.js"
+
+[build.upload]
+format="service-worker"
