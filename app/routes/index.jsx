@@ -1,30 +1,62 @@
-import { Form, useActionData } from 'remix'
+import { Form, redirect, useLoaderData, useLocation } from 'remix'
 
 export async function action({ request }) {
-  console.log('MYDATA', MYDATA)
-  let body = await request.formData()
-  let key = body.get('key')
-  let val = body.get('val')
-  await MYDATA.put(key, val)
-  return new Response(await MYDATA.get(key))
+  let form = await request.formData()
+  if (form.get('_method') === 'delete') {
+    console.log(form.getAll('delete_data'))
+    const toDelete = form.getAll('delete_data')
+    toDelete.map(key => MYDATA.delete(key))
+    return null
+  } else {
+    let key = form.get('key')
+    let value = form.get('value')
+    await MYDATA.put(key, value)
+    // return new Response(await MYDATA.get(key))
+    return redirect('/')
+  }
+}
+
+export async function loader() {
+  return await MYDATA.list()
 }
 
 export default function Index() {
-  const data = useActionData()
-  console.log('data', data)
+  const { keys } = useLoaderData()
+  const location = useLocation()
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
+    <div>
       <h1>Cloudflare Workers on Remix</h1>
+      <section>
+        <Form id="dataForm" method="post" key={location.key}>
+          <div>
+            <label>
+              <span className="key">Key:</span>
+              <input type="text" name="key" />
+            </label>
+          </div>
+          <div>
+            <label>
+              <span className="key">Value:</span>
+              <textarea rows="4" cols="50" name="value" />
+            </label>
+          </div>
+          <div>
+            <input type="submit" value="Post" />
+          </div>
+        </Form>
+      </section>
+      <hr />
       <Form method="post">
-        <label>
-          Key:
-          <input type="text" name="key" />
-        </label>
-        <label>
-          Val:
-          <input type="text" name="val" />
-        </label>
-        <input type="submit" value="Post" />
+        <input type="hidden" name="_method" value="delete" />
+        <ul>
+          {keys.map(k => (
+            <li key={k.name}>
+              <input type="checkbox" name="delete_data" value={k.name} />
+              <a href={`${k.name}.json`}>{k.name}</a>
+            </li>
+          ))}
+        </ul>
+        <input type="submit" value="Delete" />
       </Form>
     </div>
   )

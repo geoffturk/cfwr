@@ -5,10 +5,20 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration
-} from "remix";
+} from 'remix'
 
+import globalStylesUrl from './styles/global.css'
+
+export const links = () => {
+  return [
+    {
+      rel: 'stylesheet',
+      href: globalStylesUrl
+    }
+  ]
+}
 export function meta() {
-  return { title: "New Remix App" };
+  return { title: 'New Remix App' }
 }
 
 export default function App() {
@@ -24,8 +34,8 @@ export default function App() {
         <Outlet />
         <ScrollRestoration />
         <Scripts />
-        {process.env.NODE_ENV === "development" && <LiveReload />}
+        {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>
-  );
+  )
 }
