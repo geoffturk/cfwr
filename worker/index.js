@@ -6,11 +6,5 @@ addEventListener(
   'fetch',
   createEventHandler({
     build
-    // build,
-    // getLoadContext() {
-    //   return {
-    //     MYDATA: MYDATA
-    //   }
-    // }
   })
 )
