@@ -45,7 +45,7 @@ export default function Index() {
         </Form>
       </section>
       <hr />
-      <Form method="post">
+      <Form method="post" key={location.key}>
         <input type="hidden" name="_method" value="delete" />
         <ul>
           {keys.map(k => (
