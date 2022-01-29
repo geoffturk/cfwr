@@ -6,7 +6,7 @@ export async function action({ request }) {
     console.log(form.getAll('delete_data'))
     const toDelete = form.getAll('delete_data')
     toDelete.map(key => await MYDATA.delete(key))
-    return null
+    return redirect('/')
   } else {
     let key = form.get('key')
     let value = form.get('value')
