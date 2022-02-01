@@ -18,7 +18,7 @@ export const links = () => {
   ]
 }
 export function meta() {
-  return { title: 'New Remix App' }
+  return { title: 'Remix/CFWorkersKV' }
 }
 
 export default function App() {

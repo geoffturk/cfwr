@@ -1,9 +1,9 @@
 import { Form, redirect, useLocation, useTransition } from 'remix'
 
 export async function action({ request }) {
-  let form = await request.formData()
-  let key = form.get('key')
-  let value = form.get('value')
+  let formData = await request.formData()
+  let key = formData.get('key')
+  let value = formData.get('value')
   await MYDATA.put(key, value)
   return redirect('/profiles')
 }
@@ -29,7 +29,6 @@ export default function NewProfile() {
             </label>
           </div>
           <div>
-            {/* <input type="submit" value="Post" /> */}
             <button type="submit" disabled={transition.submission}>
               {transition.submission ? 'Posting...' : 'Post'}
             </button>

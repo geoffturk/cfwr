@@ -9,11 +9,9 @@ import {
 
 export async function action({ request }) {
   let form = await request.formData()
-  if (form.get('_method') === 'delete') {
-    let toDelete = form.getAll('delete_data')
-    await Promise.all(toDelete.map(async key => await MYDATA.delete(key)))
-    return redirect('/profiles')
-  }
+  let toDelete = form.getAll('delete_data')
+  await Promise.all(toDelete.map(async key => await MYDATA.delete(key)))
+  return redirect('/profiles')
 }
 
 export async function loader() {
