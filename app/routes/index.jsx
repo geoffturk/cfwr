@@ -1,16 +1,23 @@
-import { Form, redirect, useLoaderData, useLocation } from 'remix'
+import {
+  Form,
+  redirect,
+  useLoaderData,
+  useLocation,
+  useTransition
+} from 'remix'
 
 export async function action({ request }) {
   let form = await request.formData()
   if (form.get('_method') === 'delete') {
-    console.log(form.getAll('delete_data'))
     const toDelete = form.getAll('delete_data')
     await Promise.all(toDelete.map(async key => await MYDATA.delete(key)))
     return redirect('/')
   } else {
     let key = form.get('key')
     let value = form.get('value')
+    console.log(Object.fromEntries(form))
     await MYDATA.put(key, value)
+    console.log(key, await MYDATA.get(key))
     return redirect('/')
   }
 }
@@ -22,6 +29,7 @@ export async function loader() {
 export default function Index() {
   const { keys } = useLoaderData()
   const location = useLocation()
+  const transition = useTransition()
   return (
     <div>
       <h1>Cloudflare Workers on Remix</h1>
@@ -41,6 +49,9 @@ export default function Index() {
           </div>
           <div>
             <input type="submit" value="Post" />
+            {/* <button type="submit" disabled={transition.submission}>
+              {transition.submission ? 'Posting...' : 'Post'}
+            </button> */}
           </div>
         </Form>
       </section>
@@ -55,7 +66,10 @@ export default function Index() {
             </li>
           ))}
         </ul>
-        <input type="submit" value="Delete" />
+        {/* <input type="submit" value="Delete" /> */}
+        <button type="submit" disabled={transition.submission}>
+          {transition.submission ? 'Deleting...' : 'Delete'}
+        </button>
       </Form>
     </div>
   )
