@@ -1,17 +1,12 @@
-import {
-  Form,
-  Outlet,
-  redirect,
-  useLoaderData,
-  useLocation,
-  useTransition
-} from 'remix'
+import { Outlet, redirect, useFetcher, useLoaderData } from 'remix'
 
 export async function action({ request }) {
-  let form = await request.formData()
-  let toDelete = form.getAll('delete_data')
-  await Promise.all(toDelete.map(async key => await MYDATA.delete(key)))
-  return redirect('/profiles')
+  let formData = await request.formData()
+  let { _action, key } = Object.fromEntries(formData)
+  if (_action === 'delete') {
+    await MYDATA.delete(key)
+    return redirect('/profiles')
+  }
 }
 
 export async function loader() {
@@ -20,29 +15,45 @@ export async function loader() {
 
 export default function Profiles() {
   let { keys } = useLoaderData()
-  let location = useLocation()
-  let transition = useTransition()
   return (
     <div>
       <h1>Profiles</h1>
-      <Form method="post" key={location.key}>
-        <input type="hidden" name="_method" value="delete" />
-        <ul>
-          {keys.map(k => (
-            <li key={k.name}>
-              <input type="checkbox" name="delete_data" value={k.name} />
-              <a href={`profiles/${k.name}.json`} target="_blank">
-                {k.name}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <button type="submit" disabled={transition.submission}>
-          {transition.submission ? 'Deleting...' : 'Delete'}
-        </button>
-      </Form>
+      <ul>
+        {keys.map(k => (
+          <KeyItem k={k} key={k.name} />
+        ))}
+      </ul>
       <hr />
       <Outlet />
     </div>
+  )
+}
+
+function KeyItem({ k }) {
+  let fetcher = useFetcher()
+  let isDeleting = fetcher.submission?.formData.get('key') === k.name
+  return (
+    <li
+      key={k.name}
+      style={{
+        opacity: isDeleting ? 0.25 : 1
+      }}
+    >
+      <a href={`profiles/${k.name}.json`} target="_blank">
+        {k.name}
+      </a>
+      <fetcher.Form style={{ display: 'inline' }} method="post">
+        <input type="hidden" name="key" value={k.name} />
+        <button
+          type="submit"
+          aria-label="delete"
+          disabled={isDeleting}
+          name="_action"
+          value="delete"
+        >
+          x
+        </button>
+      </fetcher.Form>
+    </li>
   )
 }
