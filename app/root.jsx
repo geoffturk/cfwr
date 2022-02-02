@@ -39,3 +39,20 @@ export default function App() {
     </html>
   )
 }
+
+export function ErrorBoundary({ error }) {
+  console.error(error)
+  return (
+    <html>
+      <head>
+        <title>Oh no!</title>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <h1>💥 Ouch!!! 😫</h1>
+        <Scripts />
+      </body>
+    </html>
+  )
+}

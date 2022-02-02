@@ -4,8 +4,16 @@ export async function action({ request }) {
   let formData = await request.formData()
   let { _action, key } = Object.fromEntries(formData)
   if (_action === 'delete') {
-    await MYDATA.delete(key)
-    return redirect('/profiles')
+    try {
+      if (Math.random() > 0.25) {
+        throw new Error('Ouch!')
+      } else {
+        await MYDATA.delete(key)
+        return redirect('/profiles')
+      }
+    } catch (error) {
+      return { error: true }
+    }
   }
 }
 
@@ -32,12 +40,12 @@ export default function Profiles() {
 function KeyItem({ k }) {
   let fetcher = useFetcher()
   let isDeleting = fetcher.submission?.formData.get('key') === k.name
+  let isFailedDeletion = fetcher.data?.error
   return (
     <li
       key={k.name}
-      style={{
-        opacity: isDeleting ? 0.25 : 1
-      }}
+      hidden={isDeleting}
+      style={{ backgroundColor: isFailedDeletion ? 'red' : '' }}
     >
       <a href={`profiles/${k.name}.json`} target="_blank">
         {k.name}
@@ -46,12 +54,12 @@ function KeyItem({ k }) {
         <input type="hidden" name="key" value={k.name} />
         <button
           type="submit"
-          aria-label="delete"
+          aria-label={isFailedDeletion ? 'retry' : 'delete'}
           disabled={isDeleting}
           name="_action"
           value="delete"
         >
-          x
+          {isFailedDeletion ? 'Retry' : 'x'}
         </button>
       </fetcher.Form>
     </li>
