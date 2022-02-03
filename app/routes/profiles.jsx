@@ -1,4 +1,11 @@
-import { Form, redirect, useFetcher, useLoaderData, useTransition } from 'remix'
+import {
+  Form,
+  redirect,
+  useCatch,
+  useFetcher,
+  useLoaderData,
+  useTransition
+} from 'remix'
 import { useEffect, useRef } from 'react'
 
 export async function action({ request }) {
@@ -6,19 +13,31 @@ export async function action({ request }) {
   let { _action, ...data } = Object.fromEntries(formData)
   if (_action === 'delete') {
     try {
-      if (Math.random() > 0.25) {
-        throw new Error('Ouch!')
-      } else {
-        await MYDATA.delete(data.key)
-        return redirect('/profiles')
-      }
+      await MYDATA.delete(data.key)
+      return redirect('/profiles')
     } catch (error) {
-      return { error: true }
+      console.error(error)
+      throw new Response(
+        'Could not delete data from KV store. Please try again.',
+        {
+          status: 500
+        }
+      )
     }
   }
   if (_action === 'create') {
-    await MYDATA.put(data.key, data.value)
-    return redirect('/profiles')
+    try {
+      await MYDATA.put(data.key, data.value)
+      return redirect('/profiles')
+    } catch (error) {
+      console.error(error)
+      throw new Response(
+        'Could not add new data to KV store. Please try again.',
+        {
+          status: 500
+        }
+      )
+    }
   }
   return null
 }
@@ -109,5 +128,19 @@ function KeyItem({ k }) {
         </button>
       </fetcher.Form>
     </li>
+  )
+}
+
+export function CatchBoundary() {
+  const caught = useCatch()
+
+  return (
+    <div>
+      <h1>There was an error!</h1>
+      <h2>Status: {caught.status}</h2>
+      <pre>
+        <code>{JSON.stringify(caught.data, null, 2)}</code>
+      </pre>
+    </div>
   )
 }
