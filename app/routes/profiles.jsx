@@ -1,20 +1,26 @@
-import { Outlet, redirect, useFetcher, useLoaderData } from 'remix'
+import { Form, redirect, useFetcher, useLoaderData, useTransition } from 'remix'
+import { useEffect, useRef } from 'react'
 
 export async function action({ request }) {
   let formData = await request.formData()
-  let { _action, key } = Object.fromEntries(formData)
+  let { _action, ...data } = Object.fromEntries(formData)
   if (_action === 'delete') {
     try {
       if (Math.random() > 0.25) {
         throw new Error('Ouch!')
       } else {
-        await MYDATA.delete(key)
+        await MYDATA.delete(data.key)
         return redirect('/profiles')
       }
     } catch (error) {
       return { error: true }
     }
   }
+  if (_action === 'create') {
+    await MYDATA.put(data.key, data.value)
+    return redirect('/profiles')
+  }
+  return null
 }
 
 export async function loader() {
@@ -23,6 +29,20 @@ export async function loader() {
 
 export default function Profiles() {
   let { keys } = useLoaderData()
+  let transition = useTransition()
+  let isAdding =
+    transition.state === 'submitting' &&
+    transition.submission.formData.get('_action') === 'create'
+  let formRef = useRef()
+  let keyRef = useRef()
+
+  useEffect(() => {
+    if (!isAdding) {
+      formRef.current?.reset()
+      keyRef.current?.focus()
+    }
+  }, [isAdding])
+
   return (
     <div>
       <h1>Profiles</h1>
@@ -32,7 +52,33 @@ export default function Profiles() {
         ))}
       </ul>
       <hr />
-      <Outlet />
+      <h2>New Profile</h2>
+      <section>
+        <Form id="dataForm" method="post" ref={formRef}>
+          <div>
+            <label>
+              <span className="key">Key:</span>
+              <input type="text" name="key" ref={keyRef} />
+            </label>
+          </div>
+          <div>
+            <label>
+              <span className="key">Value:</span>
+              <textarea rows="4" cols="50" name="value" />
+            </label>
+          </div>
+          <div>
+            <button
+              type="submit"
+              disabled={isAdding}
+              name="_action"
+              value="create"
+            >
+              {isAdding ? 'Adding...' : 'Add'}
+            </button>
+          </div>
+        </Form>
+      </section>
     </div>
   )
 }
